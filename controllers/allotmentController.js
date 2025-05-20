@@ -43,6 +43,34 @@ exports.getAllotmentById = async (req, res) => {
 exports.createAllotment = async (req, res) => {
     try {
         const newAllotment = await allotment.create(req.body);
+        const doctor = await doctor.findone({ name: req.body.doctorName });
+        if (!doctor) {
+            return res.status(404).json({
+                status: 'fail',
+                message: 'Doctor not found',
+            });
+        }
+
+        const patient = await patient.findone({ name: req.body.patientName });
+        if (!patient) {
+            return res.status(404).json({
+                status: 'fail',
+                message: 'Patient not found',
+            });
+        }
+
+        const receptionist = await receptionist.findone({ name: req.body.receptionistName });
+        if (!receptionist) {
+            return res.status(404).json({
+                status: 'fail',
+                message: 'Receptionist not found',
+            });
+        }
+
+        newAllotment.doctor = doctor;
+        newAllotment.patient = patient;
+        newAllotment.allotedby = receptionist;
+        await newAllotment.save();
         res.status(201).json({
             status: 'success',
             data: {

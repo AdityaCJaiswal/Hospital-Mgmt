@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const connectDB = async () => {
   try {
-    await mongoose.connect('mongodb+srv://admin:<db_password>@hospital.fj5oykl.mongodb.net/?retryWrites=true&w=majority&appName=Hospital', {
+    await mongoose.connect('mongodb+srv://admin:5536278977@hospital.fj5oykl.mongodb.net/?retryWrites=true&w=majority&appName=Hospital', {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
@@ -22,7 +22,4 @@ const disconnectDB = async () => {
   }
 };
 // Export the connection functions
-module.exports = {
-  connectDB,
-  disconnectDB,
-};
+module.exports = connectDB;

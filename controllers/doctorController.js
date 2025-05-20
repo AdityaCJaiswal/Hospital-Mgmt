@@ -57,3 +57,49 @@ exports.createDoctor = async (req, res) => {
         });
     }
 }
+exports.updateDoctor = async (req, res) => {
+    try {
+        const doctorId = req.params.id;
+        const updatedDoctor = await doctor.findByIdAndUpdate(doctorId, req.body, { new: true });
+        if (!updatedDoctor) {
+            return res.status(404).json({
+                status: 'fail',
+                message: 'Doctor not found',
+            });
+        }   
+        res.status(200).json({
+            status: 'success',
+            data: {
+                doctor: updatedDoctor,
+            },
+        });
+    }
+    catch (error) {
+        res.status(500).json({
+            status: 'fail',
+            message: error.message,
+        });
+    }
+}
+exports.deleteDoctor = async (req, res) => {
+    try {
+        const doctorId = req.params.id;
+        const deletedDoctor = await doctor.findByIdAndDelete(doctorId);
+        if (!deletedDoctor) {
+            return res.status(404).json({
+                status: 'fail',
+                message: 'Doctor not found',
+            });
+        }
+        res.status(204).json({
+            status: 'success',
+            data: null,
+        });
+    }
+    catch (error) {
+        res.status(500).json({
+            status: 'fail',
+            message: error.message,
+        });
+    }
+}

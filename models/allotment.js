@@ -2,29 +2,20 @@ const mongoose = require('mongoose');
 
 const allotmentSchema = new mongoose.Schema({
   patient: {
-    type: String,
-    required: true,
-  },
-    patientId: {
-        type: String,
-        required: true,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'patient',
     },
     doctor: {
-        type: String,
-        required: true,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'doctor',
     },
     allotedby: {
-        type: String,
-        required: true,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'receptionist',
     },
   timestamp: {
     type: Date,
     default: Date.now,
-  },
-  allotmentId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'allotment',
-    required: true,
   },
 });
 const allotment = mongoose.model('allotment', allotmentSchema);

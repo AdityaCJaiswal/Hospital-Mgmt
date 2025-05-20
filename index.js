@@ -9,7 +9,7 @@ const connectDB= require('./db');
 const {connect }=require('mongoose');
 
 app.use(express.json());
-
+connectDB();
 //app.use('/middleware/logger',logger);
 
 app.use('/allotment', allotmentRouter);
