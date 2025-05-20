@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const logsSchema = new mongoose.Schema({
+const allotmentSchema = new mongoose.Schema({
   patient: {
     type: String,
     required: true,
@@ -27,3 +27,5 @@ const logsSchema = new mongoose.Schema({
     required: true,
   },
 });
+const allotment = mongoose.model('allotment', allotmentSchema);
+module.exports = allotment;
