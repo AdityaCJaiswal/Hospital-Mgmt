@@ -5,6 +5,7 @@ const port= 3000;
 const allotmentRouter= require('./routes/allotmentRoutes');
 const doctorRouter= require('./routes/doctorRoutes');
 const patientRouter= require('./routes/patientRoutes');
+const receptionistRouter= require('./routes/receptionistRoutes');
 const connectDB= require('./db');
 const {connect }=require('mongoose');
 
@@ -15,6 +16,7 @@ connectDB();
 app.use('/allotment', allotmentRouter);
 app.use('/doctor', doctorRouter);
 app.use('/patient', patientRouter);
+app.use('/receptionist', receptionistRouter);
 app.get('/', (req, res) => {
     res.send('Welcome to Hospital Management System!');
 });

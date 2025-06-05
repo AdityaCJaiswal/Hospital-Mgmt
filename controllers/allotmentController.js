@@ -1,5 +1,7 @@
 const allotment= require('../models/allotment');
-
+const Doctor= require('../models/doctor');
+const Patient= require('../models/patient');
+const Receptionist= require('../models/receptionist');
 exports.getAllotments = async (req, res) => {
     try {
         const allotments = await allotment.find();
@@ -43,33 +45,33 @@ exports.getAllotmentById = async (req, res) => {
 exports.createAllotment = async (req, res) => {
     try {
         const newAllotment = await allotment.create(req.body);
-        const doctor = await doctor.findone({ name: req.body.doctorName });
-        if (!doctor) {
+        const doctorData = await Doctor.findOne({ name: req.body.doctorName });
+        if (!doctorData) {
             return res.status(404).json({
                 status: 'fail',
                 message: 'Doctor not found',
             });
         }
 
-        const patient = await patient.findone({ name: req.body.patientName });
-        if (!patient) {
+        const patientData = await Patient.findOne({ name: req.body.patientName });
+        if (!patientData) {
             return res.status(404).json({
                 status: 'fail',
                 message: 'Patient not found',
             });
         }
 
-        const receptionist = await receptionist.findone({ name: req.body.receptionistName });
-        if (!receptionist) {
+        const receptionistData = await Receptionist.findOne({ name: req.body.receptionistName });
+        if (!receptionistData) {
             return res.status(404).json({
                 status: 'fail',
                 message: 'Receptionist not found',
             });
         }
 
-        newAllotment.doctor = doctor;
-        newAllotment.patient = patient;
-        newAllotment.allotedby = receptionist;
+        newAllotment.doctor = doctorData;
+        newAllotment.patient = patientData;
+        newAllotment.allotedby = receptionistData;
         await newAllotment.save();
         res.status(201).json({
             status: 'success',

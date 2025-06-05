@@ -31,5 +31,5 @@ const patientSchema = new mongoose.Schema({
         required: true,
     },
 });
-const Receptionist = mongoose.model('Receptionist', receptionistSchema);
-module.exports = Receptionist;
+const Patient = mongoose.model('Patient', patientSchema);
+module.exports = Patient;
