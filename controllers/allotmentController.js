@@ -1,10 +1,11 @@
-const allotment= require('../models/allotment');
-const Doctor= require('../models/doctor');
-const Patient= require('../models/patient');
-const Receptionist= require('../models/receptionist');
+const Allotment = require('../models/allotment');
+const Doctor = require('../models/doctor');
+const Patient = require('../models/patient');
+const Receptionist = require('../models/receptionist');
+
 exports.getAllotments = async (req, res) => {
     try {
-        const allotments = await allotment.find();
+        const allotments = await Allotment.find();
         res.status(200).json({
             status: 'success',
             data: {
@@ -18,10 +19,11 @@ exports.getAllotments = async (req, res) => {
         });
     }
 }
+
 exports.getAllotmentById = async (req, res) => {
     try {
         const allotmentId = req.params.id;
-        const allotmentData = await allotment.findById(allotmentId);
+        const allotmentData = await Allotment.findById(allotmentId);
         if (!allotmentData) {
             return res.status(404).json({
                 status: 'fail',
@@ -42,54 +44,12 @@ exports.getAllotmentById = async (req, res) => {
         });
     }
 }
-exports.createAllotment = async (req, res) => {
-    try {
-        const newAllotment = await allotment.create(req.body);
-        const doctorData = await Doctor.findOne({ name: req.body.doctorName });
-        if (!doctorData) {
-            return res.status(404).json({
-                status: 'fail',
-                message: 'Doctor not found',
-            });
-        }
 
-        const patientData = await Patient.findOne({ name: req.body.patientName });
-        if (!patientData) {
-            return res.status(404).json({
-                status: 'fail',
-                message: 'Patient not found',
-            });
-        }
 
-        const receptionistData = await Receptionist.findOne({ name: req.body.receptionistName });
-        if (!receptionistData) {
-            return res.status(404).json({
-                status: 'fail',
-                message: 'Receptionist not found',
-            });
-        }
-
-        newAllotment.doctor = doctorData;
-        newAllotment.patient = patientData;
-        newAllotment.allotedby = receptionistData;
-        await newAllotment.save();
-        res.status(201).json({
-            status: 'success',
-            data: {
-                allotment: newAllotment,
-            },
-        });
-    } catch (error) {
-        res.status(500).json({
-            status: 'fail',
-            message: error.message,
-        });
-    }
-}
 exports.updateAllotment = async (req, res) => {
     try {
         const allotmentId = req.params.id;
-        const updatedAllotment = await allotment.findByIdAndUpdate(allotmentId, req.body, { new: true });
+        const updatedAllotment = await Allotment.findByIdAndUpdate(allotmentId, req.body, { new: true });
         if (!updatedAllotment) {
             return res.status(404).json({
                 status: 'fail',
@@ -110,10 +70,11 @@ exports.updateAllotment = async (req, res) => {
         });
     }
 }
+
 exports.deleteAllotment = async (req, res) => {
     try {
         const allotmentId = req.params.id;
-        const deletedAllotment = await allotment.findByIdAndDelete(allotmentId);
+        const deletedAllotment = await Allotment.findByIdAndDelete(allotmentId);
         if (!deletedAllotment) {
             return res.status(404).json({
                 status: 'fail',
@@ -131,4 +92,99 @@ exports.deleteAllotment = async (req, res) => {
         });
     }
 }
-// Compare this snippet from models/allotment.js:
+
+// HELPER FUNCTION to get available doctor
+const getAvailableDoctor = async () => {
+  return await Doctor.findOne({ availability: true }).sort('patientsAlloted');
+};
+
+exports.createAllotmentByPatient = async (req, res) => {
+  try {
+    const { patientName } = req.body;
+
+    const doctorData = await getAvailableDoctor();
+    if (!doctorData) return res.status(404).json({ status: 'fail', message: 'No doctor available' });
+
+    const patientData = await Patient.findOne({ name: patientName });
+    if (!patientData) return res.status(404).json({ status: 'fail', message: 'Patient not found' });
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const tokenCount = await Allotment.countDocuments({
+      doctor: doctorData._id,
+      timestamp: { $gte: today }
+    });
+
+    const newAllotment = await Allotment.create({
+      patient: patientData._id,
+      doctor: doctorData._id,
+      tokenNumber: tokenCount + 1
+    });
+
+    doctorData.patientsAlloted += 1;
+    await doctorData.save();
+
+    res.status(201).json({
+      status: 'success',
+      data: {
+        token: newAllotment.tokenNumber,
+        doctor: doctorData.name,
+        patient: patientData.name,
+      },
+    });
+
+  } catch (error) {
+    res.status(500).json({ status: 'fail', message: error.message });
+  }
+};
+
+exports.createAllotmentByReceptionist = async (req, res) => {
+  try {
+    const { patientName, receptionistName, doctorName } = req.body;
+
+    const patientData = await Patient.findOne({ name: patientName });
+    const receptionistData = await Receptionist.findOne({ name: receptionistName });
+
+    if (!patientData || !receptionistData) {
+      return res.status(404).json({ status: 'fail', message: 'Patient or Receptionist not found' });
+    }
+
+    let doctorData = doctorName
+      ? await Doctor.findOne({ name: doctorName })
+      : await getAvailableDoctor();
+
+    if (!doctorData) return res.status(404).json({ status: 'fail', message: 'No doctor available' });
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const tokenCount = await Allotment.countDocuments({
+      doctor: doctorData._id,
+      timestamp: { $gte: today }
+    });
+
+    const newAllotment = await Allotment.create({
+      patient: patientData._id,
+      doctor: doctorData._id,
+      allotedby: receptionistData._id,
+      tokenNumber: tokenCount + 1
+    });
+
+    doctorData.patientsAlloted += 1;
+    await doctorData.save();
+
+    res.status(201).json({
+      status: 'success',
+      data: {
+        token: newAllotment.tokenNumber,
+        doctor: doctorData.name,
+        patient: patientData.name,
+        allotedBy: receptionistData.name
+      },
+    });
+
+  } catch (error) {
+    res.status(500).json({ status: 'fail', message: error.message });
+  }
+};

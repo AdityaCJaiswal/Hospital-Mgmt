@@ -1,17 +1,23 @@
 const express = require('express');
 const router = express.Router();
 const allotmentController = require('../controllers/allotmentController');
-const { allotDoctor } = require('../controllers/allotmentController');
 
-// Route to get all allotments
+// Get all allotments
 router.get('/', allotmentController.getAllotments);
-// Route to get allotment by ID
+
+// Get allotment by ID
 router.get('/:id', allotmentController.getAllotmentById);
-// Route to create a new allotment
-router.post('/', allotmentController.createAllotment);
-// Route to update an allotment by ID
+
+// Receptionist creates allotment (optional specific doctor)
+router.post('/receptionist', allotmentController.createAllotmentByReceptionist);
+
+// Patient books appointment (random available doctor)
+router.post('/patient', allotmentController.createAllotmentByPatient);
+
+// Update allotment
 router.put('/:id', allotmentController.updateAllotment);
-// Route to delete an allotment by ID
+
+// Delete allotment
 router.delete('/:id', allotmentController.deleteAllotment);
 
 module.exports = router;

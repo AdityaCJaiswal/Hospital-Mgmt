@@ -35,9 +35,10 @@ const doctorSchema = new mongoose.Schema({
         required: true,
     },
     availability: {
-        type: String,
-        required: true,
-    },
+  type: Boolean,
+  default: true,
+},
+
     uniqueId: {
         type: String,
         required: true,
